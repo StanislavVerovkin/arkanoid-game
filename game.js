@@ -1,9 +1,17 @@
+const KEYS = {
+    LEFT: 'ArrowLeft',
+    RIGHT: 'ArrowRight',
+    SPACE: ' ',
+};
+
 let game = {
     platform: null,
     ball: null,
     blocks: [],
     rows: 4,
     cols: 8,
+    width: 640,
+    height: 360,
     ctx: null,
     sprites: {
         background: null,
@@ -18,15 +26,15 @@ let game = {
     },
     setEvents() {
         window.addEventListener('keydown', (event) => {
-            if (event.key === 'ArrowLeft') {
-                this.platform.dx = -this.platform.velocity;
-            } else if (event.key === 'ArrowRight') {
-                this.platform.dx = this.platform.velocity;
+            if (event.key === KEYS.SPACE) {
+                this.platform.shoot();
+            } else if (event.key === KEYS.LEFT || event.key === KEYS.RIGHT) {
+                this.platform.start(event.key);
             }
         });
 
         window.addEventListener('keyup', () => {
-            this.platform.dx = 0;
+            this.platform.stop();
         })
     },
     preload(callback) {
@@ -63,6 +71,7 @@ let game = {
     },
     update() {
         this.platform.move();
+        this.ball.move();
     },
     run() {
         window.requestAnimationFrame(() => {
@@ -72,6 +81,8 @@ let game = {
         });
     },
     render() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
         this.ctx.drawImage(this.sprites.background, 0, 0);
         this.ctx.drawImage
         (
@@ -103,21 +114,50 @@ let game = {
 };
 
 game.ball = {
+    offsetY: 0,
+    limit: 3,
     x: 320,
     y: 280,
     width: 20,
-    height: 20
+    height: 20,
+    start() {
+        this.offsetY = -this.limit;
+    },
+    move() {
+        if (this.offsetY) {
+            this.y += this.offsetY;
+        }
+    }
 };
 
 game.platform = {
-    velocity: 6,
-    dx: 0,
+    offsetX: 0,
+    limit: 6,
     x: 280,
     y: 300,
+    ball: game.ball,
+    shoot() {
+        if (this.ball) {
+            this.ball.start();
+            this.ball = null;
+        }
+    },
+    start(direction) {
+        if (direction === KEYS.LEFT) {
+            this.offsetX = -this.limit;
+        } else if (direction === KEYS.RIGHT) {
+            this.offsetX = this.limit;
+        }
+    },
+    stop() {
+        this.offsetX = 0
+    },
     move() {
-        if (this.dx) {
-            this.x += this.dx;
-            game.ball.x += this.dx;
+        if (this.offsetX) {
+            this.x += this.offsetX;
+            if (this.ball) {
+                this.ball.x += this.offsetX;
+            }
         }
     }
 };
