@@ -117,6 +117,7 @@ game.platform = {
     move() {
         if (this.dx) {
             this.x += this.dx;
+            game.ball.x += this.dx;
         }
     }
 };
